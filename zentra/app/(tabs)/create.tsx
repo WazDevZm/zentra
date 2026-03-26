@@ -7,9 +7,11 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { CATEGORY_META, Category } from '@/store/app-store';
+import { C } from '@/constants/theme';
 
 const CATS: Category[] = ['Church', 'Academic', 'Social', 'Sports', 'Tech'];
 type IName = React.ComponentProps<typeof Ionicons>['name'];
+type FormIconName = React.ComponentProps<typeof Ionicons>['name'];
 
 export default function CreateScreen() {
   const [title, setTitle] = useState('');
@@ -38,7 +40,7 @@ export default function CreateScreen() {
   if (submitted) {
     return (
       <View style={styles.successContainer}>
-        <Text style={styles.successIcon}>🎉</Text>
+        <Ionicons name="checkmark-circle" size={62} color={C.navy} style={styles.successIcon} />
         <Text style={styles.successTitle}>Event Created!</Text>
         <Text style={styles.successSub}>Your event has been posted. Notifications will be sent to interested students.</Text>
       </View>
@@ -50,7 +52,7 @@ export default function CreateScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Create Event</Text>
@@ -71,8 +73,8 @@ export default function CreateScreen() {
                 style={[styles.catChip, active && { backgroundColor: meta.color, borderColor: meta.color }]}
                 onPress={() => setCategory(cat)}
               >
-                <Ionicons name={meta.iconName as IName} size={14} color={active ? '#1A237E' : meta.color} />
-                <Text style={[styles.catChipText, active && { color: '#1A237E' }]}> {cat}</Text>
+                <Ionicons name={meta.iconName as IName} size={14} color={active ? C.navy : meta.color} />
+                <Text style={[styles.catChipText, active && { color: C.navy }]}> {cat}</Text>
               </Pressable>
             );
           })}
@@ -80,20 +82,20 @@ export default function CreateScreen() {
 
         {/* Fields */}
         {[
-          { key: 'title', label: 'Event Title *', placeholder: 'e.g. Vespers Service', value: title, onChange: setTitle, icon: '📌' },
-          { key: 'date', label: 'Date *', placeholder: 'e.g. 2026-03-28', value: date, onChange: setDate, icon: '📅' },
-          { key: 'time', label: 'Time *', placeholder: 'e.g. 17:00', value: time, onChange: setTime, icon: '⏰' },
-          { key: 'location', label: 'Location *', placeholder: 'e.g. SBE Lawns', value: location, onChange: setLocation, icon: '📍' },
-          { key: 'zone', label: 'Campus Zone', placeholder: 'e.g. Main Campus', value: zone, onChange: setZone, icon: '🗺' },
+          { key: 'title', label: 'Event Title *', placeholder: 'e.g. Vespers Service', value: title, onChange: setTitle, icon: 'bookmark-outline' as FormIconName },
+          { key: 'date', label: 'Date *', placeholder: 'e.g. 2026-03-28', value: date, onChange: setDate, icon: 'calendar-outline' as FormIconName },
+          { key: 'time', label: 'Time *', placeholder: 'e.g. 17:00', value: time, onChange: setTime, icon: 'time-outline' as FormIconName },
+          { key: 'location', label: 'Location *', placeholder: 'e.g. SBE Lawns', value: location, onChange: setLocation, icon: 'location-outline' as FormIconName },
+          { key: 'zone', label: 'Campus Zone', placeholder: 'e.g. Main Campus', value: zone, onChange: setZone, icon: 'map-outline' as FormIconName },
         ].map(field => (
           <View key={field.key} style={styles.fieldWrap}>
             <Text style={styles.label}>{field.label}</Text>
             <View style={[styles.inputWrap, focused === field.key && styles.inputFocused]}>
-              <Text style={styles.inputIcon}>{field.icon}</Text>
+              <Ionicons name={field.icon} size={16} color={C.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder={field.placeholder}
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={C.textMuted}
                 value={field.value}
                 onChangeText={field.onChange}
                 onFocus={() => setFocused(field.key)}
@@ -110,7 +112,7 @@ export default function CreateScreen() {
             <TextInput
               style={styles.textArea}
               placeholder="Describe your event..."
-              placeholderTextColor="rgba(255,255,255,0.3)"
+              placeholderTextColor={C.textMuted}
               value={description}
               onChangeText={setDescription}
               multiline
@@ -124,7 +126,7 @@ export default function CreateScreen() {
 
         {/* Poster upload hint */}
         <Pressable style={styles.posterBtn}>
-          <Text style={styles.posterIcon}>🖼</Text>
+          <Ionicons name="images-outline" size={26} color={C.navy} style={styles.posterIcon} />
           <View>
             <Text style={styles.posterTitle}>Upload Poster / Image</Text>
             <Text style={styles.posterSub}>Optional — tap to select from gallery</Text>
@@ -133,7 +135,7 @@ export default function CreateScreen() {
 
         {/* Notification note */}
         <View style={styles.notifNote}>
-          <Text style={styles.notifNoteIcon}>🔔</Text>
+          <Ionicons name="notifications-outline" size={16} color={C.navy} style={styles.notifNoteIcon} />
           <Text style={styles.notifNoteText}>
             Push notifications will be sent to students interested in {category ?? 'this category'} events.
           </Text>
@@ -154,76 +156,78 @@ export default function CreateScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#1A237E' },
+  container: { flex: 1, backgroundColor: C.bg },
   header: {
-    paddingTop: 60,
+    paddingTop: 82,
     paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: '#283593',
+    backgroundColor: C.bg,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,235,59,0.12)',
+    borderBottomColor: C.border,
   },
-  headerTitle: { fontSize: 22, fontWeight: '800', color: '#fff' },
-  headerSub: { fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
-  scroll: { padding: 20 },
-  label: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 8, fontWeight: '500' },
+  headerTitle: { fontSize: 22, fontWeight: '800', color: C.textPrimary },
+  headerSub: { fontSize: 12, color: C.textSecondary, marginTop: 2 },
+  scroll: { padding: 20, paddingTop: 24 },
+  label: { fontSize: 13, color: C.textSecondary, marginBottom: 8, fontWeight: '500' },
   catRow: { marginBottom: 20 },
   catChip: {
     borderRadius: 20, borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: C.border,
     paddingHorizontal: 14, paddingVertical: 8,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: C.bgCard,
   },
-  catChipText: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '500' },
+  catChipText: { fontSize: 13, color: C.textSecondary, fontWeight: '500' },
   fieldWrap: { marginBottom: 16 },
   inputWrap: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: C.bgCard,
     borderRadius: 12, borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: C.border,
     paddingHorizontal: 14, height: 52,
   },
-  inputFocused: { borderColor: '#FFEB3B', backgroundColor: 'rgba(255,235,59,0.07)' },
-  inputIcon: { fontSize: 16, marginRight: 10, opacity: 0.6 },
-  input: { flex: 1, color: '#fff', fontSize: 15 },
+  inputFocused: { borderColor: C.navy, backgroundColor: C.bg },
+  inputIcon: { marginRight: 10 },
+  input: { flex: 1, color: C.textPrimary, fontSize: 15 },
   textAreaWrap: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: C.bgCard,
     borderRadius: 12, borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
+    borderColor: C.border,
     padding: 14, minHeight: 100,
   },
-  textArea: { color: '#fff', fontSize: 15, lineHeight: 22 },
+  textArea: { color: C.textPrimary, fontSize: 15, lineHeight: 22 },
   posterBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: C.bgCard,
     borderRadius: 14, borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: C.border,
     borderStyle: 'dashed',
     padding: 16, marginBottom: 16,
   },
-  posterIcon: { fontSize: 28 },
-  posterTitle: { fontSize: 14, fontWeight: '600', color: '#fff' },
-  posterSub: { fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 },
+  posterIcon: {},
+  posterTitle: { fontSize: 14, fontWeight: '600', color: C.textPrimary },
+  posterSub: { fontSize: 12, color: C.textMuted, marginTop: 2 },
   notifNote: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 10,
-    backgroundColor: 'rgba(255,235,59,0.09)',
+    backgroundColor: C.yellowBg,
     borderRadius: 12, borderWidth: 1,
-    borderColor: 'rgba(255,235,59,0.22)',
+    borderColor: C.yellowBorder,
     padding: 12, marginBottom: 24,
   },
-  notifNoteIcon: { fontSize: 16 },
-  notifNoteText: { flex: 1, fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 18 },
+  notifNoteIcon: { marginTop: 1 },
+  notifNoteText: { flex: 1, fontSize: 12, color: C.textSecondary, lineHeight: 18 },
   submitBtn: {
-    backgroundColor: '#FFEB3B', borderRadius: 14,
+    backgroundColor: C.yellow, borderRadius: 14,
+    borderWidth: 1,
+    borderColor: C.navy,
     height: 54, alignItems: 'center', justifyContent: 'center',
   },
   submitBtnDisabled: { opacity: 0.4 },
-  submitText: { color: '#1A237E', fontSize: 16, fontWeight: '800' },
+  submitText: { color: C.navy, fontSize: 16, fontWeight: '800' },
   successContainer: {
-    flex: 1, backgroundColor: '#1A237E',
+    flex: 1, backgroundColor: C.bg,
     alignItems: 'center', justifyContent: 'center', padding: 40,
   },
-  successIcon: { fontSize: 60, marginBottom: 20 },
-  successTitle: { fontSize: 26, fontWeight: '800', color: '#fff', marginBottom: 12 },
-  successSub: { fontSize: 14, color: 'rgba(255,255,255,0.5)', textAlign: 'center', lineHeight: 22 },
+  successIcon: { marginBottom: 20 },
+  successTitle: { fontSize: 26, fontWeight: '800', color: C.textPrimary, marginBottom: 12 },
+  successSub: { fontSize: 14, color: C.textSecondary, textAlign: 'center', lineHeight: 22 },
 });

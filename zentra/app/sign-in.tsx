@@ -29,7 +29,7 @@ export default function SignIn() {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       {/* Decorative blobs */}
       <View style={styles.blob1} />
@@ -52,11 +52,11 @@ export default function SignIn() {
           <View style={styles.fieldWrap}>
             <Text style={styles.label}>Email</Text>
             <View style={[styles.inputWrap, emailFocused && styles.inputFocused]}>
-              <Ionicons name="mail-outline" size={18} color={emailFocused ? C.yellow : 'rgba(255,255,255,0.4)'} style={styles.inputIcon} />
+              <Ionicons name="mail-outline" size={18} color={emailFocused ? C.navy : C.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="you@example.com"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={C.textMuted}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -70,11 +70,11 @@ export default function SignIn() {
           <View style={styles.fieldWrap}>
             <Text style={styles.label}>Password</Text>
             <View style={[styles.inputWrap, passwordFocused && styles.inputFocused]}>
-              <Ionicons name="lock-closed-outline" size={18} color={passwordFocused ? C.yellow : 'rgba(255,255,255,0.4)'} style={styles.inputIcon} />
+              <Ionicons name="lock-closed-outline" size={18} color={passwordFocused ? C.navy : C.textMuted} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="••••••••"
-                placeholderTextColor="rgba(255,255,255,0.3)"
+                placeholderTextColor={C.textMuted}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -82,7 +82,7 @@ export default function SignIn() {
                 onBlur={() => setPasswordFocused(false)}
               />
               <Pressable onPress={() => setShowPassword(!showPassword)}>
-                <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color="rgba(255,255,255,0.4)" />
+                <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={18} color={C.textMuted} />
               </Pressable>
             </View>
           </View>
@@ -129,28 +129,28 @@ const styles = StyleSheet.create({
     width: 220, height: 220, borderRadius: 110,
     backgroundColor: C.yellowBg,
   },
-  scroll: { flexGrow: 1, alignItems: 'center', paddingTop: 80, paddingBottom: 48, paddingHorizontal: 24 },
-  header: { alignItems: 'center', marginBottom: 36 },
+  scroll: { flexGrow: 1, alignItems: 'center', paddingTop: 64, paddingBottom: 36, paddingHorizontal: 20 },
+  header: { alignItems: 'center', marginBottom: 28 },
   logoWrap: {
-    width: 110, height: 110, borderRadius: 28,
+    width: 96, height: 96, borderRadius: 24,
     backgroundColor: C.bgCard,
     borderWidth: 1.5, borderColor: C.yellowBorder,
     alignItems: 'center', justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  logo: { width: 80, height: 80 },
-  appName: { fontSize: 32, fontWeight: '800', color: C.textPrimary, letterSpacing: 8, marginBottom: 6 },
-  tagline: { fontSize: 13, color: C.yellow, opacity: 0.8, letterSpacing: 0.5 },
+  logo: { width: 70, height: 70 },
+  appName: { fontSize: 28, fontWeight: '800', color: C.textPrimary, letterSpacing: 6, marginBottom: 4 },
+  tagline: { fontSize: 13, color: C.textSecondary, opacity: 0.9, letterSpacing: 0.5 },
   card: {
     width: '100%',
     backgroundColor: C.bgCard,
     borderRadius: 24, borderWidth: 1, borderColor: C.border,
-    padding: 28,
+    padding: 22,
     shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3, shadowRadius: 20, elevation: 10,
   },
   cardTitle: { fontSize: 22, fontWeight: '700', color: C.textPrimary, marginBottom: 4 },
-  cardSubtitle: { fontSize: 14, color: C.textSecondary, marginBottom: 28 },
+  cardSubtitle: { fontSize: 14, color: C.textSecondary, marginBottom: 20 },
   fieldWrap: { marginBottom: 16 },
   label: { fontSize: 13, color: C.textSecondary, marginBottom: 8, fontWeight: '500' },
   inputWrap: {
@@ -159,21 +159,24 @@ const styles = StyleSheet.create({
     borderRadius: 12, borderWidth: 1.5, borderColor: C.border,
     paddingHorizontal: 14, height: 54,
   },
-  inputFocused: { borderColor: C.yellow, backgroundColor: C.yellowBg },
+  inputFocused: { borderColor: C.navy, backgroundColor: C.bg },
   inputIcon: { marginRight: 10 },
   input: { flex: 1, color: C.textPrimary, fontSize: 15 },
   forgotWrap: { alignSelf: 'flex-end', marginBottom: 24, marginTop: 4 },
-  forgotText: { color: C.yellow, fontSize: 13, opacity: 0.85 },
+  forgotText: { color: C.navyLight, fontSize: 13, opacity: 0.9 },
   btn: {
     backgroundColor: C.yellow, borderRadius: 14, height: 56,
+    borderWidth: 1,
+    borderColor: C.navy,
     alignItems: 'center', justifyContent: 'center',
   },
   btnPressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
-  btnText: { color: C.bg, fontSize: 17, fontWeight: '800', letterSpacing: 0.5 },
+  btnText: { color: C.navy, fontSize: 17, fontWeight: '800', letterSpacing: 0.5 },
   divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 24, gap: 12 },
   dividerLine: { flex: 1, height: 1, backgroundColor: C.border },
   dividerText: { color: C.textMuted, fontSize: 13 },
   linkRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   linkPrompt: { color: C.textSecondary, fontSize: 14 },
-  link: { color: C.yellow, fontSize: 14, fontWeight: '700' },
+  link: { color: C.navy, fontSize: 14, fontWeight: '700' },
 });
+// UI in the top of the navigator is being cut by the top of the ana bar

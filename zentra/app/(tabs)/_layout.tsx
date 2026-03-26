@@ -21,7 +21,7 @@ function TabIcon({
 }) {
   return (
     <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
-      <Ionicons name={name} size={22} color={color} />
+      <Ionicons name={name} size={19} color={color} />
       {!!badge && badge > 0 && (
         <View style={styles.badge}>
           <Ionicons name="ellipse" size={16} color="#FF4444" style={styles.badgeDot} />
@@ -34,7 +34,7 @@ function TabIcon({
 function CreateTabIcon({ focused }: { focused: boolean }) {
   return (
     <View style={[styles.createBtn, focused && styles.createBtnActive]}>
-      <Ionicons name="add" size={28} color="#1A237E" />
+      <Ionicons name="add" size={23} color="#1A237E" />
     </View>
   );
 }
@@ -49,6 +49,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#FFEB3B',
         tabBarInactiveTintColor: 'rgba(255,255,255,0.4)',
         tabBarLabelStyle: styles.tabLabel,
+        tabBarItemStyle: styles.tabItem,
       }}
     >
       <Tabs.Screen
@@ -106,26 +107,29 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: '#283593',
-    borderTopColor: 'rgba(255,235,59,0.15)',
-    borderTopWidth: 1,
-    height: 82,
-    paddingBottom: 18,
-    paddingTop: 6,
-    elevation: 20,
+    backgroundColor: '#1A237E',
+    borderTopWidth: 0,
+    height: 76,
+    paddingBottom: 12,
+    paddingTop: 8,
+    borderRadius: 0,
+    elevation: 18,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+  },
+  tabItem: {
+    paddingVertical: 2,
   },
   tabLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '600',
-    marginTop: 2,
+    marginTop: 1,
   },
   iconWrap: {
-    width: 42,
-    height: 36,
+    width: 36,
+    height: 32,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -145,13 +149,15 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   createBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 18,
+    width: 46,
+    height: 46,
+    borderRadius: 16,
     backgroundColor: '#FFEB3B',
+    borderWidth: 1,
+    borderColor: '#1A237E',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   createBtnActive: {
     backgroundColor: '#F9D800',

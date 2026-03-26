@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   mockUser, mockEvents, CATEGORY_META, Category, formatEventTime,
 } from '@/store/app-store';
+import { C } from '@/constants/theme';
 
 const ALL_CATS: Category[] = ['Church', 'Academic', 'Social', 'Sports', 'Tech'];
 type IName = React.ComponentProps<typeof Ionicons>['name'];
@@ -24,13 +25,13 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
         <Pressable style={styles.settingsBtn}>
-          <Text style={styles.settingsIcon}>⚙️</Text>
+          <Ionicons name="settings-outline" size={22} color={C.navy} />
         </Pressable>
       </View>
 
@@ -77,7 +78,7 @@ export default function ProfileScreen() {
                   style={[styles.interestChip, active && { backgroundColor: meta.bg, borderColor: meta.color }]}
                   onPress={() => toggleInterest(cat)}
                 >
-                  <Ionicons name={meta.iconName as IName} size={15} color={active ? meta.color : 'rgba(255,255,255,0.7)'} />
+                  <Ionicons name={meta.iconName as IName} size={15} color={active ? meta.color : C.textMuted} />
                   <Text style={[styles.interestLabel, active && { color: meta.color }]}>{cat}</Text>
                   {active && <Text style={[styles.interestCheck, { color: meta.color }]}>✓</Text>}
                 </Pressable>
@@ -88,10 +89,10 @@ export default function ProfileScreen() {
 
         {/* Saved / Interested events */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⭐ Saved Events</Text>
+          <Text style={styles.sectionTitle}>Saved Events</Text>
           {savedEvents.length === 0 ? (
             <View style={styles.emptyCard}>
-              <Text style={styles.emptyIcon}>📭</Text>
+              <Ionicons name="bookmark-outline" size={32} color={C.textMuted} style={styles.emptyIcon} />
               <Text style={styles.emptyText}>No saved events yet</Text>
               <Text style={styles.emptySub}>Tap &quot;Interested&quot; on any event to save it here</Text>
             </View>
@@ -114,7 +115,7 @@ export default function ProfileScreen() {
                       {formatEventTime(event.date)} · {event.location}
                     </Text>
                   </View>
-                  <Text style={styles.savedArrow}>›</Text>
+                  <Ionicons name="chevron-forward" size={18} color={C.textMuted} style={styles.savedArrow} />
                 </Pressable>
               );
             })
@@ -125,15 +126,15 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Settings</Text>
           {[
-            { icon: '🔔', label: 'Notification Preferences' },
-            { icon: '🔒', label: 'Privacy & Security' },
-            { icon: '❓', label: 'Help & Support' },
-            { icon: '📋', label: 'Terms of Service' },
+            { icon: 'notifications-outline' as IName, label: 'Notification Preferences' },
+            { icon: 'lock-closed-outline' as IName, label: 'Privacy & Security' },
+            { icon: 'help-circle-outline' as IName, label: 'Help & Support' },
+            { icon: 'document-text-outline' as IName, label: 'Terms of Service' },
           ].map(item => (
             <Pressable key={item.label} style={styles.settingsRow}>
-              <Text style={styles.settingsRowIcon}>{item.icon}</Text>
+              <Ionicons name={item.icon} size={18} color={C.navy} style={styles.settingsRowIcon} />
               <Text style={styles.settingsRowLabel}>{item.label}</Text>
-              <Text style={styles.settingsRowArrow}>›</Text>
+              <Ionicons name="chevron-forward" size={18} color={C.textMuted} style={styles.settingsRowArrow} />
             </Pressable>
           ))}
         </View>
@@ -153,29 +154,28 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#1A237E' },
+  container: { flex: 1, backgroundColor: C.bg },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: 68,
     paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: '#283593',
+    backgroundColor: C.bg,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,235,59,0.12)',
+    borderBottomColor: C.border,
   },
-  headerTitle: { fontSize: 22, fontWeight: '800', color: '#fff' },
+  headerTitle: { fontSize: 22, fontWeight: '800', color: C.textPrimary },
   settingsBtn: { padding: 4 },
-  settingsIcon: { fontSize: 22 },
-  scroll: { paddingTop: 20 },
+  scroll: { paddingTop: 24 },
 
   profileCard: {
     marginHorizontal: 20,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: C.bgCard,
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: C.border,
     padding: 24,
     alignItems: 'center',
     marginBottom: 24,
@@ -187,45 +187,45 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   avatarText: { fontSize: 28, fontWeight: '800', color: '#1A237E' },
-  name: { fontSize: 20, fontWeight: '800', color: '#fff', marginBottom: 4 },
-  email: { fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 20 },
+  name: { fontSize: 20, fontWeight: '800', color: C.textPrimary, marginBottom: 4 },
+  email: { fontSize: 13, color: C.textMuted, marginBottom: 20 },
   statsRow: { flexDirection: 'row', alignItems: 'center', gap: 0 },
   statItem: { flex: 1, alignItems: 'center' },
-  statNum: { fontSize: 22, fontWeight: '800', color: '#FFEB3B' },
-  statLbl: { fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 2 },
-  statDivider: { width: 1, height: 32, backgroundColor: 'rgba(255,255,255,0.1)' },
+  statNum: { fontSize: 22, fontWeight: '800', color: C.navy },
+  statLbl: { fontSize: 11, color: C.textMuted, marginTop: 2 },
+  statDivider: { width: 1, height: 32, backgroundColor: C.border },
 
   section: { marginHorizontal: 20, marginBottom: 28 },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: '#fff', marginBottom: 4 },
-  sectionSub: { fontSize: 12, color: 'rgba(255,255,255,0.35)', marginBottom: 14 },
+  sectionTitle: { fontSize: 15, fontWeight: '700', color: C.textPrimary, marginBottom: 4 },
+  sectionSub: { fontSize: 12, color: C.textMuted, marginBottom: 14 },
 
   interestGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   interestChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     borderRadius: 20, borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.12)',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderColor: C.border,
+    backgroundColor: C.bgCard,
     paddingHorizontal: 14, paddingVertical: 9,
   },
   interestIcon: { fontSize: 15 },
-  interestLabel: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
+  interestLabel: { fontSize: 13, fontWeight: '600', color: C.textSecondary },
   interestCheck: { fontSize: 12, fontWeight: '800', marginLeft: 2 },
 
   emptyCard: {
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: C.bgCard,
     borderRadius: 16, borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
+    borderColor: C.border,
     padding: 24, alignItems: 'center',
   },
-  emptyIcon: { fontSize: 32, marginBottom: 8 },
-  emptyText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.5)', marginBottom: 4 },
-  emptySub: { fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center' },
+  emptyIcon: { marginBottom: 8 },
+  emptyText: { fontSize: 14, fontWeight: '600', color: C.textSecondary, marginBottom: 4 },
+  emptySub: { fontSize: 12, color: C.textMuted, textAlign: 'center' },
 
   savedCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: C.bgCard,
     borderRadius: 14, borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: C.border,
     marginBottom: 10, overflow: 'hidden',
   },
   savedAccent: { width: 4, alignSelf: 'stretch' },
@@ -234,20 +234,20 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   savedIcon: { fontSize: 18 },
-  savedTitle: { fontSize: 14, fontWeight: '700', color: '#fff', marginBottom: 3 },
-  savedMeta: { fontSize: 12, color: 'rgba(255,255,255,0.4)' },
-  savedArrow: { fontSize: 22, color: 'rgba(255,255,255,0.25)', paddingRight: 14 },
+  savedTitle: { fontSize: 14, fontWeight: '700', color: C.textPrimary, marginBottom: 3 },
+  savedMeta: { fontSize: 12, color: C.textMuted },
+  savedArrow: { paddingRight: 14 },
 
   settingsRow: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: C.bgCard,
     borderRadius: 14, borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
+    borderColor: C.border,
     padding: 14, marginBottom: 8,
   },
-  settingsRowIcon: { fontSize: 18 },
-  settingsRowLabel: { flex: 1, fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: '500' },
-  settingsRowArrow: { fontSize: 20, color: 'rgba(255,255,255,0.2)' },
+  settingsRowIcon: {},
+  settingsRowLabel: { flex: 1, fontSize: 14, color: C.textSecondary, fontWeight: '500' },
+  settingsRowArrow: {},
 
   signOutBtn: {
     marginHorizontal: 20,

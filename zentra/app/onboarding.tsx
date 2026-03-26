@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { CATEGORY_META, Category } from '@/store/app-store';
+import { C } from '@/constants/theme';
 
 const CATS: Category[] = ['Church', 'Academic', 'Social', 'Sports', 'Tech'];
 type IName = React.ComponentProps<typeof Ionicons>['name'];
@@ -19,10 +20,10 @@ export default function Onboarding() {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       <View style={styles.top}>
-        <Text style={styles.emoji}>🎯</Text>
+        <Ionicons name="sparkles-outline" size={44} color={C.navy} style={styles.emoji} />
         <Text style={styles.title}>What are you into?</Text>
         <Text style={styles.sub}>
           Pick your interests so we can show you the most relevant events on campus.
@@ -39,7 +40,7 @@ export default function Onboarding() {
               style={[styles.card, active && { borderColor: meta.color, backgroundColor: meta.bg }]}
               onPress={() => toggle(cat)}
             >
-              <Ionicons name={meta.iconName as IName} size={36} color={active ? meta.color : 'rgba(255,255,255,0.7)'} />
+              <Ionicons name={meta.iconName as IName} size={36} color={active ? meta.color : C.textMuted} />
               <Text style={[styles.cardLabel, active && { color: meta.color }]}>{cat}</Text>
               {active && (
                 <View style={[styles.checkBadge, { backgroundColor: meta.color }]}>
@@ -70,11 +71,11 @@ export default function Onboarding() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#1A237E' },
-  top: { paddingTop: 80, paddingHorizontal: 28, paddingBottom: 32, alignItems: 'center' },
+  container: { flex: 1, backgroundColor: C.bg },
+  top: { paddingTop: 92, paddingHorizontal: 28, paddingBottom: 32, alignItems: 'center' },
   emoji: { fontSize: 48, marginBottom: 16 },
-  title: { fontSize: 26, fontWeight: '800', color: '#fff', textAlign: 'center', marginBottom: 10 },
-  sub: { fontSize: 14, color: 'rgba(255,255,255,0.5)', textAlign: 'center', lineHeight: 22 },
+  title: { fontSize: 26, fontWeight: '800', color: C.textPrimary, textAlign: 'center', marginBottom: 10 },
+  sub: { fontSize: 14, color: C.textSecondary, textAlign: 'center', lineHeight: 22 },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -84,31 +85,33 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '44%',
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: C.bgCard,
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: C.border,
     padding: 20,
     alignItems: 'center',
     position: 'relative',
   },
   cardIcon: { fontSize: 36, marginBottom: 10 },
-  cardLabel: { fontSize: 15, fontWeight: '700', color: '#fff' },
+  cardLabel: { fontSize: 15, fontWeight: '700', color: C.textPrimary },
   checkBadge: {
     position: 'absolute', top: 10, right: 10,
     width: 22, height: 22, borderRadius: 11,
     alignItems: 'center', justifyContent: 'center',
   },
-  checkText: { color: '#1A237E', fontSize: 12, fontWeight: '800' },
+  checkText: { color: C.bg, fontSize: 12, fontWeight: '800' },
   bottom: { padding: 24, paddingBottom: 40, alignItems: 'center' },
-  selectedCount: { fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 14 },
+  selectedCount: { fontSize: 13, color: C.textMuted, marginBottom: 14 },
   btn: {
-    backgroundColor: '#FFEB3B', borderRadius: 14,
+    backgroundColor: C.yellow, borderRadius: 14,
+    borderWidth: 1,
+    borderColor: C.navy,
     height: 54, width: '100%',
     alignItems: 'center', justifyContent: 'center',
     marginBottom: 14,
   },
   btnDisabled: { opacity: 0.4 },
-  btnText: { color: '#1A237E', fontSize: 16, fontWeight: '800' },
-  skipText: { color: 'rgba(255,255,255,0.35)', fontSize: 13 },
+  btnText: { color: C.navy, fontSize: 16, fontWeight: '800' },
+  skipText: { color: C.textSecondary, fontSize: 13 },
 });

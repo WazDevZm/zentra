@@ -1,9 +1,19 @@
-import { useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View, SafeAreaView } from 'react-native';
+import { useMemo, useState } from 'react';
+import {
+  FlatList,
+  Image,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { mockEvents, CATEGORY_META, formatEventTime, Event, Category } from '@/store/app-store';
+import { CATEGORY_META, Category, Event, formatEventTime, mockEvents } from '@/store/app-store';
 import { C } from '@/constants/theme';
 
 type IName = React.ComponentProps<typeof Ionicons>['name'];
@@ -14,29 +24,44 @@ export default function ExploreScreen() {
   const [selected, setSelected] = useState<Category | null>(null);
   const [events, setEvents] = useState(mockEvents);
 
-  const filtered = events
-    .filter(e => new Date(e.date).getTime() >= Date.now() - 3600000)
-    .filter(e => !selected || e.category === selected)
-    .filter(e => !search || e.title.toLowerCase().includes(search.toLowerCase()) || e.location.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return events
+      .filter(e => new Date(e.date).getTime() >= Date.now() - 3600000)
+      .filter(e => !selected || e.category === selected)
+      .filter(e => {
+        if (!q) return true;
+        return e.title.toLowerCase().includes(q) || e.location.toLowerCase().includes(q);
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [events, selected, search]);
 
   const toggleInterested = (id: string) => {
-    setEvents(prev => prev.map(e =>
-      e.id === id ? { ...e, interestedByMe: !e.interestedByMe, interested: e.interestedByMe ? e.interested - 1 : e.interested + 1 } : e
-    ));
+    setEvents(prev =>
+      prev.map(e =>
+        e.id === id
+          ? {
+              ...e,
+              interestedByMe: !e.interestedByMe,
+              interested: e.interestedByMe ? e.interested - 1 : e.interested + 1,
+            }
+          : e
+      )
+    );
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
+
       <SafeAreaView style={styles.safeHeader}>
-        <View style={styles.header}>
-          <View>
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextWrap}>
             <Text style={styles.headerTitle}>Explore Events</Text>
-            <Text style={styles.headerSub}>Find what&apos;s happening on campus</Text>
+            <Text style={styles.headerSub}>Find what is happening on campus</Text>
           </View>
-          <View style={styles.headerIcon}>
-            <Ionicons name="compass-outline" size={22} color={C.yellow} />
+          <View style={styles.headerIconWrap}>
+            <Ionicons name="compass-outline" size={20} color={C.navy} />
           </View>
         </View>
       </SafeAreaView>
@@ -45,107 +70,167 @@ export default function ExploreScreen() {
         <Ionicons name="search-outline" size={18} color={C.textMuted} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search events or locations..."
-          placeholderTextColor="rgba(255,255,255,0.3)"
+          placeholder="Search events or locations"
+          placeholderTextColor={C.textMuted}
           value={search}
           onChangeText={setSearch}
         />
         {search.length > 0 && (
-          <Pressable onPress={() => setSearch('')}>
+          <Pressable onPress={() => setSearch('')} hitSlop={8}>
             <Ionicons name="close-circle" size={18} color={C.textMuted} />
           </Pressable>
         )}
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow} contentContainerStyle={styles.filterContent}>
-        <Pressable style={[styles.filterChip, !selected && styles.filterChipActive]} onPress={() => setSelected(null)}>
-          <Text style={[styles.filterText, !selected && styles.filterTextActive]}>All</Text>
-        </Pressable>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterContent}
+        style={styles.filterRow}
+      >
+        <FilterChip
+          label="All"
+          icon="apps-outline"
+          active={!selected}
+          onPress={() => setSelected(null)}
+        />
         {ALL_CATS.map(cat => {
           const meta = CATEGORY_META[cat];
-          const active = selected === cat;
           return (
-            <Pressable
+            <FilterChip
               key={cat}
-              style={[styles.filterChip, active && { backgroundColor: meta.color, borderColor: meta.color }]}
-              onPress={() => setSelected(active ? null : cat)}
-            >
-              <Ionicons name={meta.iconName as IName} size={13} color={active ? C.bg : meta.color} />
-              <Text style={[styles.filterText, active && { color: C.bg }]}> {cat}</Text>
-            </Pressable>
+              label={cat}
+              icon={meta.iconName as IName}
+              active={selected === cat}
+              onPress={() => setSelected(selected === cat ? null : cat)}
+            />
           );
         })}
       </ScrollView>
 
-      <Text style={styles.resultCount}>{filtered.length} event{filtered.length !== 1 ? 's' : ''} found</Text>
+      <Text style={styles.resultCount}>
+        {filtered.length} event{filtered.length !== 1 ? 's' : ''} found
+      </Text>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.list}>
-        {filtered.length === 0 ? (
-          <View style={styles.empty}>
-            <Ionicons name="search" size={48} color={C.textMuted} />
-            <Text style={styles.emptyText}>No events found</Text>
-            <Text style={styles.emptySubText}>Try a different search or category</Text>
-          </View>
-        ) : (
-          filtered.map(event => (
-            <ExploreCard
-              key={event.id}
-              event={event}
-              onPress={() => router.push(`/event/${event.id}`)}
-              onInterested={() => toggleInterested(event.id)}
-            />
-          ))
+      <FlatList
+        data={filtered}
+        keyExtractor={item => item.id}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+        renderItem={({ item }) => (
+          <ExploreCard
+            event={item}
+            onPress={() => router.push(`/event/${item.id}`)}
+            onInterested={() => toggleInterested(item.id)}
+          />
         )}
-        <View style={{ height: 100 }} />
-      </ScrollView>
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Ionicons name="search" size={44} color={C.textMuted} />
+            <Text style={styles.emptyTitle}>No events found</Text>
+            <Text style={styles.emptySub}>Try a different search or category</Text>
+          </View>
+        }
+      />
     </View>
   );
 }
 
-function ExploreCard({ event, onPress, onInterested }: { event: Event; onPress: () => void; onInterested: () => void }) {
+function FilterChip({
+  label,
+  icon,
+  active,
+  onPress,
+}: {
+  label: string;
+  icon: IName;
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable style={[styles.filterChip, active && styles.filterChipActive]} onPress={onPress}>
+      <Ionicons name={icon} size={13} color={active ? C.navy : C.textMuted} />
+      <Text numberOfLines={1} style={[styles.filterText, active && styles.filterTextActive]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+function ExploreCard({
+  event,
+  onPress,
+  onInterested,
+}: {
+  event: Event;
+  onPress: () => void;
+  onInterested: () => void;
+}) {
   const meta = CATEGORY_META[event.category];
+
   return (
     <Pressable style={styles.card} onPress={onPress}>
       {event.imageUrl ? (
         <Image source={{ uri: event.imageUrl }} style={styles.cardImage} />
       ) : (
-        <View style={[styles.cardImagePlaceholder, { backgroundColor: meta.bg }]}>
-          <Ionicons name={meta.iconName as IName} size={32} color={meta.color} />
+        <View style={[styles.cardImageFallback, { backgroundColor: meta.bg }]}> 
+          <Ionicons name={meta.iconName as IName} size={30} color={meta.color} />
         </View>
       )}
+
       <View style={styles.cardBody}>
-        <View style={styles.cardTop}>
-          <View style={[styles.catBadge, { backgroundColor: meta.bg }]}>
+        <View style={styles.cardTopRow}>
+          <View style={[styles.categoryBadge, { backgroundColor: meta.bg }]}> 
             <Ionicons name={meta.iconName as IName} size={11} color={meta.color} />
-            <Text style={[styles.catBadgeText, { color: meta.color }]}> {event.category}</Text>
+            <Text style={[styles.categoryBadgeText, { color: meta.color }]}>{event.category}</Text>
           </View>
           <Text style={styles.cardTime}>{formatEventTime(event.date)}</Text>
         </View>
-        <Text style={styles.cardTitle}>{event.title}</Text>
-        <Text style={styles.cardOrg}>by {event.organizer}</Text>
-        <View style={styles.cardLocRow}>
+
+        <Text style={styles.cardTitle} numberOfLines={2}>
+          {event.title}
+        </Text>
+
+        <Text style={styles.cardOrg} numberOfLines={1}>
+          by {event.organizer}
+        </Text>
+
+        <View style={styles.locationRow}>
           <Ionicons name="location-outline" size={12} color={C.textMuted} />
-          <Text style={styles.cardLoc}> {event.location} · {event.zone}</Text>
+          <Text style={styles.locationText} numberOfLines={1}>
+            {event.location} - {event.zone}
+          </Text>
         </View>
-        <Text style={styles.cardDesc} numberOfLines={2}>{event.description}</Text>
-        <View style={styles.cardFooter}>
+
+        <Text style={styles.cardDesc} numberOfLines={2}>
+          {event.description}
+        </Text>
+
+        <View style={styles.footerRow}>
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
               <Ionicons name="eye-outline" size={13} color={C.textMuted} />
-              <Text style={styles.stat}> {event.views}</Text>
+              <Text style={styles.statText}>{event.views}</Text>
             </View>
             <View style={styles.statItem}>
               <Ionicons name="star-outline" size={13} color={C.textMuted} />
-              <Text style={styles.stat}> {event.interested}</Text>
+              <Text style={styles.statText}>{event.interested}</Text>
             </View>
             <View style={styles.statItem}>
               <Ionicons name="people-outline" size={13} color={C.textMuted} />
-              <Text style={styles.stat}> ~{event.attendanceEstimate}</Text>
+              <Text style={styles.statText}>~{event.attendanceEstimate}</Text>
             </View>
           </View>
-          <Pressable style={[styles.intBtn, event.interestedByMe && styles.intBtnActive]} onPress={onInterested}>
-            <Ionicons name={event.interestedByMe ? 'star' : 'star-outline'} size={12} color={event.interestedByMe ? C.bg : C.yellow} />
-            <Text style={[styles.intText, event.interestedByMe && styles.intTextActive]}> Interested</Text>
+
+          <Pressable style={[styles.interestedBtn, event.interestedByMe && styles.interestedBtnActive]} onPress={onInterested}>
+            <Ionicons
+              name={event.interestedByMe ? 'star' : 'star-outline'}
+              size={12}
+              color={event.interestedByMe ? C.bg : C.navy}
+            />
+            <Text style={[styles.interestedText, event.interestedByMe && styles.interestedTextActive]}>
+              Interested
+            </Text>
           </Pressable>
         </View>
       </View>
@@ -154,44 +239,240 @@ function ExploreCard({ event, onPress, onInterested }: { event: Event; onPress: 
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: C.bg },
-  safeHeader: { backgroundColor: C.bgCard, borderBottomWidth: 1, borderBottomColor: C.yellowBorder },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16 },
-  headerTitle: { fontSize: 22, fontWeight: '800', color: C.textPrimary },
-  headerSub: { fontSize: 12, color: C.textSecondary, marginTop: 2 },
-  headerIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: C.yellowBg, alignItems: 'center', justifyContent: 'center' },
-  searchWrap: { flexDirection: 'row', alignItems: 'center', margin: 16, backgroundColor: C.bgSurface, borderRadius: 14, borderWidth: 1, borderColor: C.border, paddingHorizontal: 14, height: 48, gap: 8 },
-  searchInput: { flex: 1, color: C.textPrimary, fontSize: 14 },
-  filterRow: { marginBottom: 8 },
-  filterContent: { paddingHorizontal: 16, gap: 8 },
-  filterChip: { flexDirection: 'row', alignItems: 'center', borderRadius: 20, borderWidth: 1, borderColor: C.border, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: C.bgSurface },
-  filterChipActive: { backgroundColor: C.yellow, borderColor: C.yellow },
-  filterText: { fontSize: 13, color: C.textSecondary, fontWeight: '500' },
-  filterTextActive: { color: C.bg, fontWeight: '700' },
-  resultCount: { fontSize: 12, color: C.textMuted, paddingHorizontal: 16, marginBottom: 8 },
-  list: { paddingHorizontal: 16, paddingTop: 4 },
-  empty: { alignItems: 'center', paddingTop: 60, gap: 10 },
-  emptyText: { fontSize: 16, fontWeight: '600', color: C.textSecondary },
-  emptySubText: { fontSize: 13, color: C.textMuted },
-  card: { backgroundColor: C.bgCard, borderRadius: 16, borderWidth: 1, borderColor: C.border, marginBottom: 16, overflow: 'hidden' },
-  cardImage: { width: '100%', height: 160 },
-  cardImagePlaceholder: { width: '100%', height: 120, alignItems: 'center', justifyContent: 'center' },
-  cardBody: { padding: 14 },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  catBadge: { flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
-  catBadgeText: { fontSize: 11, fontWeight: '600' },
-  cardTime: { fontSize: 11, color: C.textSecondary },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: C.textPrimary, marginBottom: 2 },
-  cardOrg: { fontSize: 12, color: C.textMuted, marginBottom: 4 },
-  cardLocRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
-  cardLoc: { fontSize: 12, color: C.textSecondary },
-  cardDesc: { fontSize: 13, color: C.textSecondary, lineHeight: 18, marginBottom: 10 },
-  cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  statsRow: { flexDirection: 'row', gap: 10 },
-  statItem: { flexDirection: 'row', alignItems: 'center' },
-  stat: { fontSize: 12, color: C.textMuted },
-  intBtn: { flexDirection: 'row', alignItems: 'center', borderRadius: 8, borderWidth: 1, borderColor: C.yellowBorder, paddingHorizontal: 10, paddingVertical: 4 },
-  intBtnActive: { backgroundColor: C.yellow, borderColor: C.yellow },
-  intText: { fontSize: 12, color: C.yellow, fontWeight: '600' },
-  intTextActive: { color: C.bg },
+  container: {
+    flex: 1,
+    backgroundColor: C.bg,
+  },
+  safeHeader: {
+    backgroundColor: C.bg,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 28,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+  },
+  headerTextWrap: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: C.textPrimary,
+  },
+  headerSub: {
+    marginTop: 2,
+    fontSize: 12,
+    color: C.textSecondary,
+  },
+  headerIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 11,
+    backgroundColor: C.yellowBg,
+    borderWidth: 1,
+    borderColor: C.yellowBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchWrap: {
+    marginTop: 10,
+    marginBottom: 8,
+    marginHorizontal: 14,
+    height: 44,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: C.border,
+    backgroundColor: C.bgSurface,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    color: C.textPrimary,
+  },
+  filterRow: {
+    marginBottom: 6,
+  },
+  filterContent: {
+    paddingHorizontal: 14,
+    gap: 6,
+    paddingBottom: 2,
+  },
+  filterChip: {
+    minHeight: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: C.border,
+    backgroundColor: C.bgSurface,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  filterChipActive: {
+    backgroundColor: C.yellow,
+    borderColor: C.navy,
+  },
+  filterText: {
+    fontSize: 11,
+    lineHeight: 14,
+    color: C.textSecondary,
+    fontWeight: '600',
+  },
+  filterTextActive: {
+    color: C.navy,
+    fontWeight: '700',
+  },
+  resultCount: {
+    paddingHorizontal: 14,
+    marginBottom: 8,
+    fontSize: 12,
+    color: C.textMuted,
+  },
+  listContent: {
+    paddingHorizontal: 14,
+    paddingTop: 4,
+    paddingBottom: 100,
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingTop: 64,
+    gap: 10,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: C.textSecondary,
+  },
+  emptySub: {
+    fontSize: 13,
+    color: C.textMuted,
+  },
+  card: {
+    marginBottom: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: C.border,
+    backgroundColor: C.bgCard,
+    overflow: 'hidden',
+  },
+  cardImage: {
+    width: '100%',
+    height: 150,
+  },
+  cardImageFallback: {
+    width: '100%',
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardBody: {
+    padding: 12,
+  },
+  cardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  categoryBadge: {
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  categoryBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  cardTime: {
+    fontSize: 11,
+    color: C.textSecondary,
+  },
+  cardTitle: {
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '700',
+    color: C.textPrimary,
+    marginBottom: 2,
+  },
+  cardOrg: {
+    fontSize: 12,
+    color: C.textMuted,
+    marginBottom: 4,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    gap: 4,
+  },
+  locationText: {
+    flex: 1,
+    fontSize: 12,
+    color: C.textSecondary,
+  },
+  cardDesc: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: C.textSecondary,
+    marginBottom: 10,
+  },
+  footerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexShrink: 1,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  statText: {
+    fontSize: 12,
+    color: C.textMuted,
+  },
+  interestedBtn: {
+    marginLeft: 'auto',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: C.yellowBorder,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  interestedBtnActive: {
+    backgroundColor: C.yellow,
+    borderColor: C.navy,
+  },
+  interestedText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: C.navy,
+  },
+  interestedTextActive: {
+    color: C.bg,
+  },
 });

@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { mockNotifications, CATEGORY_META, Notification } from '@/store/app-store';
+import { C } from '@/constants/theme';
 
 type IName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -17,7 +18,7 @@ export default function NotificationsScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       <View style={styles.header}>
         <View>
@@ -34,7 +35,7 @@ export default function NotificationsScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {notifs.length === 0 ? (
           <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>🔔</Text>
+            <Ionicons name="notifications-off-outline" size={40} color={C.textMuted} style={styles.emptyIcon} />
             <Text style={styles.emptyText}>No notifications yet</Text>
           </View>
         ) : (
@@ -81,45 +82,45 @@ function NotifCard({ notif, onPress }: { notif: Notification; onPress: () => voi
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#1A237E' },
+  container: { flex: 1, backgroundColor: C.bg },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 60,
+    paddingTop: 68,
     paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: '#283593',
+    backgroundColor: C.bg,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,235,59,0.12)',
+    borderBottomColor: C.border,
   },
-  headerTitle: { fontSize: 22, fontWeight: '800', color: '#fff' },
-  headerSub: { fontSize: 12, color: '#FFEB3B', marginTop: 2 },
+  headerTitle: { fontSize: 22, fontWeight: '800', color: C.textPrimary },
+  headerSub: { fontSize: 12, color: C.navy, marginTop: 2 },
   markAllBtn: {
     borderRadius: 10, borderWidth: 1,
-    borderColor: 'rgba(255,235,59,0.35)',
+    borderColor: C.navy,
     paddingHorizontal: 12, paddingVertical: 6,
   },
-  markAllText: { fontSize: 12, color: '#FFEB3B', fontWeight: '600' },
-  scroll: { padding: 16 },
+  markAllText: { fontSize: 12, color: C.navy, fontWeight: '600' },
+  scroll: { padding: 16, paddingTop: 20 },
   empty: { alignItems: 'center', paddingTop: 80 },
-  emptyIcon: { fontSize: 40, marginBottom: 12 },
-  emptyText: { fontSize: 16, color: 'rgba(255,255,255,0.4)' },
+  emptyIcon: { marginBottom: 12 },
+  emptyText: { fontSize: 16, color: C.textMuted },
   card: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: C.bgCard,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
+    borderColor: C.border,
     padding: 14,
     marginBottom: 10,
     position: 'relative',
   },
   cardUnread: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: C.bgSurface,
+    borderColor: C.navyLight,
   },
   unreadDot: {
     position: 'absolute',
@@ -131,10 +132,10 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   icon: { fontSize: 20 },
-  notifTitle: { fontSize: 14, fontWeight: '700', color: '#fff', marginBottom: 3 },
-  notifBody: { fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 18, marginBottom: 8 },
+  notifTitle: { fontSize: 14, fontWeight: '700', color: C.textPrimary, marginBottom: 3 },
+  notifBody: { fontSize: 13, color: C.textSecondary, lineHeight: 18, marginBottom: 8 },
   notifMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   catPill: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
   catPillText: { fontSize: 11, fontWeight: '600' },
-  notifTime: { fontSize: 11, color: 'rgba(255,255,255,0.35)' },
+  notifTime: { fontSize: 11, color: C.textMuted },
 });
