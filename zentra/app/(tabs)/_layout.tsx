@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { HapticTab } from '@/components/haptic-tab';
 import { mockNotifications } from '@/store/app-store';
+import { C } from '@/constants/theme';
 
 const unreadCount = mockNotifications.filter(n => !n.read).length;
 
@@ -46,7 +47,7 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: '#FFEB3B',
+        tabBarActiveTintColor: C.yellow,
         tabBarInactiveTintColor: 'rgba(255,255,255,0.4)',
         tabBarLabelStyle: styles.tabLabel,
         tabBarItemStyle: styles.tabItem,
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   iconWrapActive: {
-    backgroundColor: 'rgba(255,235,59,0.14)',
+    backgroundColor: C.yellowBg,
   },
   badge: {
     position: 'absolute',
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 16,
-    backgroundColor: '#FFEB3B',
+    backgroundColor: C.yellow,
     borderWidth: 1,
     borderColor: '#1A237E',
     alignItems: 'center',

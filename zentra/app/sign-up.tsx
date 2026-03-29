@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import {
+  Alert,
   Animated, Dimensions, Image, KeyboardAvoidingView,
   Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
 } from 'react-native';
@@ -7,6 +8,7 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { C } from '@/constants/theme';
+import { supabase } from '@/lib/supabase';
 
 type IoniconsName = React.ComponentProps<typeof Ionicons>['name'];
 const { width } = Dimensions.get('window');
@@ -18,6 +20,7 @@ export default function SignUp() {
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(40)).current;
@@ -35,6 +38,48 @@ export default function SignUp() {
     { key: 'password', label: 'Password',          icon: 'lock-closed-outline', placeholder: '••••••••',         value: password, onChange: setPassword, keyboardType: 'default',       secure: true  },
     { key: 'confirm',  label: 'Confirm Password',  icon: 'lock-closed-outline', placeholder: '••••••••',         value: confirm,  onChange: setConfirm,  keyboardType: 'default',       secure: true  },
   ];
+
+  const handleSignUp = async () => {
+    if (!name.trim() || !email.trim() || !password || !confirm) {
+      Alert.alert('Missing fields', 'Please complete all required fields.');
+      return;
+    }
+
+    if (password !== confirm) {
+      Alert.alert('Password mismatch', 'Password and confirm password must match.');
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('Weak password', 'Use at least 6 characters for your password.');
+      return;
+    }
+
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: {
+          full_name: name.trim(),
+        },
+      },
+    });
+    setLoading(false);
+
+    if (error) {
+      Alert.alert('Sign up failed', error.message);
+      return;
+    }
+
+    if (!data.session) {
+      Alert.alert('Check your email', 'We sent a confirmation link. Please verify then sign in.');
+      router.replace('/sign-in');
+      return;
+    }
+
+    router.replace('/onboarding');
+  };
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -96,9 +141,10 @@ export default function SignUp() {
 
           <Pressable
             style={({ pressed }) => [styles.btn, pressed && styles.btnPressed]}
-            onPress={() => router.replace('/onboarding')}
+            onPress={handleSignUp}
+            disabled={loading}
           >
-            <Text style={styles.btnText}>Create Account</Text>
+            <Text style={styles.btnText}>{loading ? 'Creating...' : 'Create Account'}</Text>
           </Pressable>
 
           <View style={styles.divider}>

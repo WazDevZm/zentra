@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Animated, Image, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { supabase } from '@/lib/supabase';
 
 export default function SplashScreen() {
   const logoScale = useRef(new Animated.Value(0)).current;
@@ -22,9 +23,10 @@ export default function SplashScreen() {
       }),
     ]).start();
 
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
+      const { data } = await supabase.auth.getSession();
       Animated.timing(logoOpacity, { toValue: 0, duration: 320, useNativeDriver: true }).start(() => {
-        router.replace('/sign-in');
+        router.replace(data.session ? '/(tabs)' : '/sign-in');
       });
     }, 1800);
 

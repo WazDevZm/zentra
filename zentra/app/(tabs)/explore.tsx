@@ -1,10 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   FlatList,
   Image,
   Pressable,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -15,6 +14,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { CATEGORY_META, Category, Event, formatEventTime, mockEvents } from '@/store/app-store';
 import { C } from '@/constants/theme';
+import { fetchEventsFromSupabase } from '@/lib/events';
 
 type IName = React.ComponentProps<typeof Ionicons>['name'];
 const ALL_CATS: Category[] = ['Church', 'Academic', 'Social', 'Sports', 'Tech'];
@@ -22,7 +22,29 @@ const ALL_CATS: Category[] = ['Church', 'Academic', 'Social', 'Sports', 'Tech'];
 export default function ExploreScreen() {
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<Category | null>(null);
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
   const [events, setEvents] = useState(mockEvents);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadEvents = async () => {
+      try {
+        const rows = await fetchEventsFromSupabase();
+        if (mounted && rows.length > 0) {
+          setEvents(rows);
+        }
+      } catch {
+        // Keep local mock events as fallback while backend setup is in progress.
+      }
+    };
+
+    void loadEvents();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -60,9 +82,6 @@ export default function ExploreScreen() {
             <Text style={styles.headerTitle}>Explore Events</Text>
             <Text style={styles.headerSub}>Find what is happening on campus</Text>
           </View>
-          <View style={styles.headerIconWrap}>
-            <Ionicons name="compass-outline" size={20} color={C.navy} />
-          </View>
         </View>
       </SafeAreaView>
 
@@ -82,35 +101,65 @@ export default function ExploreScreen() {
         )}
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterContent}
-        style={styles.filterRow}
-      >
-        <FilterChip
-          label="All"
-          icon="apps-outline"
-          active={!selected}
-          onPress={() => setSelected(null)}
-        />
-        {ALL_CATS.map(cat => {
-          const meta = CATEGORY_META[cat];
-          return (
-            <FilterChip
-              key={cat}
-              label={cat}
-              icon={meta.iconName as IName}
-              active={selected === cat}
-              onPress={() => setSelected(selected === cat ? null : cat)}
-            />
-          );
-        })}
-      </ScrollView>
+      <View style={styles.filterMenuWrap}>
+        <Pressable
+          style={[styles.filterMenuBtn, isFilterMenuOpen && styles.filterMenuBtnActive]}
+          onPress={() => setIsFilterMenuOpen(prev => !prev)}
+        >
+          <Ionicons name="menu-outline" size={16} color={C.navy} />
+          <Text style={styles.filterMenuBtnText}>Filters</Text>
+          {selected ? (
+            <View style={styles.activeDot}>
+              <Text style={styles.activeDotText}>1</Text>
+            </View>
+          ) : null}
+          <Ionicons
+            name={isFilterMenuOpen ? 'chevron-up' : 'chevron-down'}
+            size={14}
+            color={C.textSecondary}
+          />
+        </Pressable>
 
-      <Text style={styles.resultCount}>
-        {filtered.length} event{filtered.length !== 1 ? 's' : ''} found
-      </Text>
+        {isFilterMenuOpen ? (
+          <View style={styles.filterPanel}>
+            <View style={styles.filterPanelHeader}>
+              <Text style={styles.filterPanelTitle}>Browse by category</Text>
+              {selected ? (
+                <Pressable onPress={() => setSelected(null)} hitSlop={8}>
+                  <Text style={styles.clearFilterText}>Clear</Text>
+                </Pressable>
+              ) : null}
+            </View>
+
+            <View style={styles.filterGrid}>
+              <FilterChip
+                label="All"
+                icon="apps-outline"
+                active={!selected}
+                onPress={() => setSelected(null)}
+              />
+              {ALL_CATS.map(cat => {
+                const meta = CATEGORY_META[cat];
+                return (
+                  <FilterChip
+                    key={cat}
+                    label={cat}
+                    icon={meta.iconName as IName}
+                    active={selected === cat}
+                    onPress={() => setSelected(selected === cat ? null : cat)}
+                  />
+                );
+              })}
+            </View>
+          </View>
+        ) : null}
+      </View>
+
+      <View style={styles.resultWrap}>
+        <Text style={styles.resultCount}>
+          {filtered.length} event{filtered.length !== 1 ? 's' : ''} found
+        </Text>
+      </View>
 
       <FlatList
         data={filtered}
@@ -120,7 +169,17 @@ export default function ExploreScreen() {
         renderItem={({ item }) => (
           <ExploreCard
             event={item}
-            onPress={() => router.push(`/event/${item.id}`)}
+            onPress={() =>
+              router.push({
+                pathname: '/event/[id]',
+                params: {
+                  id: item.id,
+                  interestedByMe: item.interestedByMe ? '1' : '0',
+                  interestedCount: String(item.interested),
+                  savedByMe: item.interestedByMe ? '1' : '0',
+                },
+              })
+            }
             onInterested={() => toggleInterested(item.id)}
           />
         )}
@@ -251,8 +310,8 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 28,
+    justifyContent: 'flex-start',
+    paddingTop: 36,
     paddingBottom: 12,
     paddingHorizontal: 16,
   },
@@ -269,16 +328,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontSize: 12,
     color: C.textSecondary,
-  },
-  headerIconWrap: {
-    width: 38,
-    height: 38,
-    borderRadius: 11,
-    backgroundColor: C.yellowBg,
-    borderWidth: 1,
-    borderColor: C.yellowBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   searchWrap: {
     marginTop: 10,
@@ -299,22 +348,83 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: C.textPrimary,
   },
-  filterRow: {
+  filterMenuWrap: {
     marginBottom: 6,
-  },
-  filterContent: {
     paddingHorizontal: 14,
-    gap: 6,
-    paddingBottom: 2,
   },
-  filterChip: {
-    minHeight: 32,
-    borderRadius: 16,
+  filterMenuBtn: {
+    minHeight: 36,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: C.border,
     backgroundColor: C.bgSurface,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  filterMenuBtnActive: {
+    borderColor: C.navy,
+    backgroundColor: C.yellowBg,
+  },
+  filterMenuBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: C.navy,
+  },
+  activeDot: {
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: C.navy,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+    marginRight: 'auto',
+  },
+  activeDotText: {
+    fontSize: 10,
+    color: C.bg,
+    fontWeight: '700',
+    lineHeight: 12,
+  },
+  filterPanel: {
+    marginTop: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: C.border,
+    backgroundColor: C.bgSurface,
+    padding: 10,
+  },
+  filterPanelHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  filterPanelTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: C.textPrimary,
+  },
+  clearFilterText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: C.navy,
+  },
+  filterGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  filterChip: {
+    minHeight: 30,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: C.border,
+    backgroundColor: C.bgSurface,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -324,8 +434,8 @@ const styles = StyleSheet.create({
     borderColor: C.navy,
   },
   filterText: {
-    fontSize: 11,
-    lineHeight: 14,
+    fontSize: 10,
+    lineHeight: 13,
     color: C.textSecondary,
     fontWeight: '600',
   },
@@ -333,9 +443,13 @@ const styles = StyleSheet.create({
     color: C.navy,
     fontWeight: '700',
   },
-  resultCount: {
+  resultWrap: {
     paddingHorizontal: 14,
-    marginBottom: 8,
+    paddingTop: 2,
+    paddingBottom: 8,
+    backgroundColor: C.bg,
+  },
+  resultCount: {
     fontSize: 12,
     color: C.textMuted,
   },
@@ -359,8 +473,8 @@ const styles = StyleSheet.create({
     color: C.textMuted,
   },
   card: {
-    marginBottom: 14,
-    borderRadius: 16,
+    marginBottom: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: C.border,
     backgroundColor: C.bgCard,
@@ -368,16 +482,16 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     width: '100%',
-    height: 150,
+    height: 126,
   },
   cardImageFallback: {
     width: '100%',
-    height: 120,
+    height: 100,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cardBody: {
-    padding: 12,
+    padding: 10,
   },
   cardTopRow: {
     flexDirection: 'row',
@@ -402,8 +516,8 @@ const styles = StyleSheet.create({
     color: C.textSecondary,
   },
   cardTitle: {
-    fontSize: 15,
-    lineHeight: 20,
+    fontSize: 14,
+    lineHeight: 18,
     fontWeight: '700',
     color: C.textPrimary,
     marginBottom: 2,
@@ -425,10 +539,10 @@ const styles = StyleSheet.create({
     color: C.textSecondary,
   },
   cardDesc: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 16,
     color: C.textSecondary,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   footerRow: {
     flexDirection: 'row',

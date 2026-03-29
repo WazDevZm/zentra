@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import {
+  Alert,
   Animated, Dimensions, Image, KeyboardAvoidingView,
   Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
 } from 'react-native';
@@ -7,6 +8,7 @@ import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { C } from '@/constants/theme';
+import { supabase } from '@/lib/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -16,6 +18,7 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(40)).current;
@@ -26,6 +29,27 @@ export default function SignIn() {
       Animated.timing(slideUp, { toValue: 0, duration: 600, useNativeDriver: true }),
     ]).start();
   }, [fadeIn, slideUp]);
+
+  const handleSignIn = async () => {
+    if (!email.trim() || !password) {
+      Alert.alert('Missing fields', 'Please enter your email and password.');
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+    setLoading(false);
+
+    if (error) {
+      Alert.alert('Sign in failed', error.message);
+      return;
+    }
+
+    router.replace('/(tabs)');
+  };
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
@@ -93,9 +117,10 @@ export default function SignIn() {
 
           <Pressable
             style={({ pressed }) => [styles.btn, pressed && styles.btnPressed]}
-            onPress={() => router.replace('/(tabs)')}
+            onPress={handleSignIn}
+            disabled={loading}
           >
-            <Text style={styles.btnText}>Sign In</Text>
+            <Text style={styles.btnText}>{loading ? 'Signing In...' : 'Sign In'}</Text>
           </Pressable>
 
           <View style={styles.divider}>
